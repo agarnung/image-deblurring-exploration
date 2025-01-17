@@ -10,7 +10,7 @@ My mobile phone camera is broken (i.e.  ```📉 : (📷 ⊂ 📱) → ⛓️‍�
 Currently, these are my type of photos:
 
 <p align="center">
-  <img src="./assets/6.jpg" alt="Blurry photo 6" title="Blurry photo 6" style="display: inline-block; width: 300px" />,
+  <img src="./assets/6.jpg" alt="Blurry photo 6" title="Blurry photo 6" style="display: inline-block; width: 300px" />...
 </p>
 
 ...How do I improve them?
