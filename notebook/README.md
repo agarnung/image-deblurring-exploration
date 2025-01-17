@@ -2,7 +2,11 @@
 
 This document is a self-contained tutorial/introduction to the basics of image deblurring, through a _hands-on_ approach.   
 
-## Introduction
+## Index
+* [Introduction](#Introduction)
+    * .
+
+## Introduction <a class="anchor" id="Introduction"></a>
 
 La captura de una imagen mediante cualquier tipo de cámara analógica o digital, e incluso bajo el sistema visual humano, tal como está representada en el mundo real y físico, es imposible, por culpa de procesos como el ruido electrónico, la distorsión no lineal de las lentes por inherentes imperfecciones, problemas de enfoque, la cuantización y cuantificacíon, el ruido contenido al sistema de adquisición y factores no controlados del entorno o ambiente, las vibraciones mecánicas, el tiempo de adquisición, el movimiento de los objetos capturados, etc. Varios tipos de fenómenos de degradación (Noise, scatter, glare y blur) se reseñan en https://temchromatinlab.wordpress.com/deconvolution/. Todas estas fuentes de error tienen en común que causan, en la imagen de salida, o bien que la luz incidente en el sensor se disperse por los píxeles vecinos, o bien que información de píxeles vecinos se combinen entre sí, perturbando la información real.
 
