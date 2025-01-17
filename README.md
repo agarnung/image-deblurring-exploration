@@ -3,7 +3,17 @@ An attempt to make my mobile phone's camera work. Inspired by practical uses of 
 
 My mobile phone camera is broken (i.e.  ```📉 : (📷 ⊂ 📱) → ⛓️‍💥```); the lens is shattered (photo attached below). In this repository, I investigate how to work around this problem using variational techniques in image processing to restore photos taken with the damaged camera.
 
-...PHOTO OF MI LENS HERE...
+<p align="center">
+  <img src="./assets/crashed_lense.jpg" alt="Crashed lense" title="Crashed lense" style="display: inline-block; width: 300px" />,
+</p>
+
+Currently, these are my type of photos:
+
+<p align="center">
+  <img src="./assets/6.jpg" alt="Blurry photo 6" title="Blurry photo 6" style="display: inline-block; width: 300px" />...
+</p>
+
+...How do I improve them?
 
 ## Project Description
 
@@ -16,3 +26,9 @@ The goal is to automatically and effectively restore images through deconvolutio
 - **Recovering the PSF (Point Spread Function)** using deblurring methods.
 - **Performing the deconvolution** of the damaged images to produce clearer and sharper photos.
 - **Evaluating the quality of the restored images** by comparing them with a reference image taken with a working camera.
+
+## Porject overview
+
+* The folder notebook contains the main investigation.
+* The folder test_cpp and test_python contain the code utilized.
+
