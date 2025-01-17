@@ -4,7 +4,7 @@ An attempt to make my mobile phone's camera work. Inspired by practical uses of 
 My mobile phone camera is broken (i.e.  ```📉 : (📷 ⊂ 📱) → ⛓️‍💥```); the lens is shattered (photo attached below). In this repository, I investigate how to work around this problem using variational techniques in image processing to restore photos taken with the damaged camera.
 
 <p align="center">
-  <img src="./assets/creashed_lense.jpg" alt="tabla2" title="tabla2" style="display: inline-block; width: 300px" />,
+  <img src="./assets/crashed_lense.jpg" alt="Crashed lense" title="Crashed lense" style="display: inline-block; width: 300px" />,
 </p>
 
 ## Project Description
