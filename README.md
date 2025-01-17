@@ -7,6 +7,14 @@ My mobile phone camera is broken (i.e.  ```📉 : (📷 ⊂ 📱) → ⛓️‍�
   <img src="./assets/crashed_lense.jpg" alt="Crashed lense" title="Crashed lense" style="display: inline-block; width: 300px" />,
 </p>
 
+Currently, these are my type of photos:
+
+<p align="center">
+  <img src="./assets/6.jpg" alt="Blurry photo 6" title="Blurry photo 6" style="display: inline-block; width: 300px" />,
+</p>
+
+...How do I improve them?
+
 ## Project Description
 
 The main goal of this project is to investigate and apply deblurring/deconvolution methods to improve photos taken with a mobile camera that has suffered physical damage, specifically to the lens. The images captured by this camera are blurry due to the damage, and traditional focus correction methods cannot be used due to the lack of precise information about the Point Spread Function (PSF). To address this issue, we explore deblurring techniques, both with known PSF (non-blind deblurring) and without it (blind deblurring), using variational techniques and numerical methods.
