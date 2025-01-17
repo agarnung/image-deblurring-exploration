@@ -27,8 +27,8 @@ The goal is to automatically and effectively restore images through deconvolutio
 - **Performing the deconvolution** of the damaged images to produce clearer and sharper photos.
 - **Evaluating the quality of the restored images** by comparing them with a reference image taken with a working camera.
 
-## Porject overview
+## Project overview
 
 * The folder notebook contains the main investigation.
-* The folder test_cpp and test_python contain the code utilized.
+* The folder code contain the code utilized.
 
