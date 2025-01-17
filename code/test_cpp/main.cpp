@@ -4,6 +4,8 @@
 #include <opencv4/opencv2/imgcodecs.hpp>
 #include <opencv4/opencv2/highgui.hpp>
 
+#include "deconv_hyper_lap.h"
+
 void muestraImagenOpenCV(const cv::Mat img, std::string title, bool destroyAfter = true)
 {
     cv::namedWindow(title, cv::WINDOW_NORMAL);
@@ -93,16 +95,10 @@ cv::Mat deconvolutionByTV(const cv::Mat& inputImage, const cv::Mat& kernel, int 
     return fTV;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    if (argc < 2)
-    {
-        std::cerr << "Uso: " << argv[0] << " <path_imagen>" << std::endl;
-        return -1;
-    }
-
-    std::string imagePath = argv[1];
-    cv::Mat input = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
+    std::string imagePath = "/opt/proyectos/image-deblurrer/assets/7.jpg";
+    cv::Mat input = cv::imread(imagePath, cv::IMREAD_UNCHANGED);
 
     if (input.empty())
     {
@@ -110,22 +106,71 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
-    input.convertTo(input, CV_64F, 1.0 / 255.0);
-
-    /// PSF usada (gaussiana, motion, leer de archivo según datasheet de cámara...)
-    int kernel_size = 3;
-    // cv::Mat psf = cv::imread("psf.jpg", cv::IMREAD_GRAYSCALE);
-    cv::Mat psf = cv::getGaussianKernel(kernel_size, 1.0, CV_64F) * cv::getGaussianKernel(kernel_size, 1.0, CV_64F).t();
-
-    cv::Mat result;
     std::chrono::high_resolution_clock::time_point start_time, end_time;
-    muestraImagenOpenCV(input, "input", false);
-    start_time = std::chrono::high_resolution_clock::now();
-    cv::Mat tiko_deconv = deconvolutionByTV(input, psf, 100, 20.0, 0.0004);
-    end_time = std::chrono::high_resolution_clock::now();
-    MyTimeOutput("deconvolutionWithTVPrior: ", start_time, end_time);
-    muestraImagenOpenCV(tiko_deconv, "deconvolutionWithTVPrior", false);
 
+    /// Deconvolution with TV prior
+    {
+        // if (input.channels() == 3)
+        //     cv::cvtColor(input, input, cv::COLOR_BGR2GRAY);
+        // cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
+        // input.convertTo(input, CV_64F, 1.0 / 255.0);
+
+        // /// PSF usada (gaussiana, motion, leer de archivo según datasheet de cámara...)
+        // int kernel_size = 3;
+        // // cv::Mat psf = cv::imread("psf.jpg", cv::IMREAD_GRAYSCALE);
+        // cv::Mat psf = cv::getGaussianKernel(kernel_size, 1.0, CV_64F) * cv::getGaussianKernel(kernel_size, 1.0, CV_64F).t();
+
+        // cv::Mat result;
+        // muestraImagenOpenCV(input, "input", false);
+        // start_time = std::chrono::high_resolution_clock::now();
+        // cv::Mat tiko_deconv = deconvolutionByTV(input, psf, 100, 20.0, 0.0004);
+        // end_time = std::chrono::high_resolution_clock::now();
+        // MyTimeOutput("deconvolutionWithTVPrior: ", start_time, end_time);
+        // muestraImagenOpenCV(tiko_deconv, "deconvolutionWithTVPrior", false);
+    }
+
+    /// Deconvolution with hyper-Laplacian prior
+    {
+        cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
+        input.convertTo(input, CV_32F, 1.0 / 255.0);
+
+        cv::Mat out[3], src[3], imout;
+
+        cv::Mat kernel = (cv::Mat_<float>(11, 11) <<
+                          2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          5, 0, 2, 0, 1, 1, 4, 0, 3, 0, 3,
+                          1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                          4, 1, 5, 0, 1, 3, 4, 0, 3, 0, 2,
+                          0, 0, 0, 0, 1, 6, 2, 0, 0, 0, 0,
+                          1, 0, 4, 5, 23, 37, 27, 2, 1, 0, 0,
+                          0, 0, 0, 0, 17, 35, 23, 0, 0, 0, 0,
+                          0, 0, 0, 0, 4, 9, 5, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0);
+        kernel /= 255.0;
+
+        start_time = std::chrono::high_resolution_clock::now();
+
+        cv::split(input, src);
+        std::cout << "Número de canales: " << input.channels() << std::endl;
+
+        for (int i = 0; i < input.channels(); i++) {
+            fast_deblurring(src[i], kernel, out[i]);
+        }
+
+        cv::merge(out, input.channels(), imout);
+
+        end_time = std::chrono::high_resolution_clock::now();
+        MyTimeOutput("fast_deblurring: ", start_time, end_time);
+
+        imout *= 255.0;
+        imout.convertTo(imout, CV_8U);
+
+        cv::imshow("Input", input);
+        cv::imshow("Deblurred", imout);
+
+        cv::waitKey(0);
+    }
     return 0;
 }
