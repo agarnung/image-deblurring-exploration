@@ -2,74 +2,140 @@
 
 This document is a self-contained tutorial/introduction to the basics of image deblurring, through a _hands-on_ approach.   
 
+
 ## Index
 * [Introduction](#Introduction)
     * .
+* [Testing](#Testing)
+    * [Non-blind deconvolution](#non-blind-deconvolution)
+        * [Wiener Filter](#wiener)
+        * [Lucy-Richardson](#Lucy-Richardson)
+        * [Modified unsupervised Wiener](#uns-wiener)
+        * [Lucy-Richardson with TV prior](#Lucy-Richardson-TV)
+    * [Blind deconvolution](#bind-deconvolution)
+    * [Semi-blind deconvolution](#semi-bind-deconvolution)
+* [References](#References)
+    * [C++](#C++)
+    * [Python](#Python)
+    * [MATLAB](#MATLAB)
+    * [Links](#Links)
+    * [Books](#Books)
+
 
 ## Introduction <a class="anchor" id="Introduction"></a>
 
-La captura de una imagen mediante cualquier tipo de cámara analógica o digital, e incluso bajo el sistema visual humano, tal como está representada en el mundo real y físico, es imposible, por culpa de procesos como el ruido electrónico, la distorsión no lineal de las lentes por inherentes imperfecciones, problemas de enfoque, la cuantización y cuantificacíon, el ruido contenido al sistema de adquisición y factores no controlados del entorno o ambiente, las vibraciones mecánicas, el tiempo de adquisición, el movimiento de los objetos capturados, etc. Varios tipos de fenómenos de degradación (Noise, scatter, glare y blur) se reseñan en https://temchromatinlab.wordpress.com/deconvolution/. Todas estas fuentes de error tienen en común que causan, en la imagen de salida, o bien que la luz incidente en el sensor se disperse por los píxeles vecinos, o bien que información de píxeles vecinos se combinen entre sí, perturbando la información real.
+Capturing an image using any type of analog or digital camera, and even through the human visual system, as it is represented in the real and physical world, is impossible due to processes like electronic noise, non-linear lens distortion caused by inherent imperfections, focusing issues, quantization, discretization, noise in the acquisition system, uncontrolled environmental factors, mechanical vibrations, acquisition time, movement of the captured objects, etc. Various degradation phenomena (Noise, scatter, glare, and blur) are discussed in https://temchromatinlab.wordpress.com/deconvolution/. All these sources of error have in common that they cause, in the output image, either the incident light on the sensor to scatter across neighboring pixels, or information from neighboring pixels to combine with each other, disturbing the actual information.
 
-Todos estos factores hacen de las imagenes una (pura) aproximación de la realidad, pues el problema es ill-posed y hay pérdida de información. Pero el PSNR usualmetne es tan alto que "no nos importa". Sin embargo, hay ocasiones (cer siguiente imagne) en las que, es tan bajo, que uno la puede calificar como "degradada". Imaginémonos que fotografiamos un punto luminoso _infinitamente_ lejano empleando una cámara _infinitamente perfecta_; el resultado de la imagen será un único píxel brillante. Ahora bien, si fotografiamos con nuestra cámara una estrella, el resultado está lejos de ser un único píxel brillante,por el contrario, veremos una región dispersa más o menos circular que decrece en brillo con el radio. El efecto que un sistema de adquisición de imágenes real provoca en una fuente de luz "perfecta" es lo que se llama _point spread function_ (PSF). Si la convolución de una imagen perfecto con esta PSF provoca la imagen real que adquiriríamos, entonces haciendo la deconvolucón de nuestra imagen degrada con la PSF conseguimos la imagen restaurada, "ideal". 
+All these factors make images a (pure) approximation of reality, since the problem is ill-posed and information is lost. However, the PSNR is usually so high that "we don't care". Still, there are occasions (see next image) where it is so low that one can call it "degraded." Imagine photographing an infinitely distant light point using an infinitely perfect camera; the resulting image will be a single bright pixel. However, if we photograph a star with our camera, the result is far from being a single bright pixel; instead, we will see a region scattered in a more or less circular shape that decreases in brightness with the radius. The effect that a real image acquisition system has on a "perfect" light source is called the **Point Spread Function** (PSF). If the convolution of a perfect image with this PSF produces the real image we would acquire, then by performing the deconvolution of our degraded image with the PSF, we obtain the restored, "ideal" image.
 
-Más aún, tras este efecto, existe ruido que se agrega a la imagen debido a procesos como los mencionados al principio. Incluso a veces (e.g. telescopios espaciales) es una mala asunción que la PSF sea la misma en todos los píxeles de nuestra imagen real. A degraded image like this is often denoted **blurred**. So, in a basic model, the ```Imaging Process = Convolve(ideal image, PSF) + Noise```. Todos estos factores hcaen que la estimación de la PSF sea posible en la teoría, pero prácticamente imposible en práctica.
+Furthermore, after this effect, noise is added to the image due to processes like those mentioned earlier. Sometimes (e.g., space telescopes), it is a poor assumption that the PSF is the same across all pixels in our real image. A degraded image like this is often denoted **blurred**. So, in a basic model, the ```Imaging Process = Convolve(ideal image, PSF) + Noise```. All these factors make PSF estimation theoretically possible, but practically impossible.
 
-## Dissambiguation
 
-Smoothing: Tratamos de suprimir caracteŕisticas superfluas y discontibuidades falsas
+### Disambiguation
 
-Enhancing: tratamos de crear discontibuidades en sitios donde deberían aparecer
+- **Smoothing**: We try to suppress superfluous features and false discontinuities.
+- **Enhancing**: We try to create discontinuities where they should appear.
+- **Deblurring**: The process of removing (any kind of) blur from an image. Sometimes deblurring is included as an example of **enhancing**.
+- **Deconvolution**: The process of applying the inverse operation of a convolution, often used in restoration and deblurring problems.
+- **Sharpening**: The process of improving the perceived acuity and visual sharpness of an image, especially for viewing it on a screen or in print. Sharpening can be used to approximate deconvolution and often provides reasonable results.
+- **Super-resolution**: The process of reconstructing missing detail in an image.
+- **Upsampling**: The process of increasing the image resolution, with no relation to blur, sharpness, or detail – but aiming to at least not reduce it. Sadly, ML literature calls upsampling “single frame super-resolution”.
 
-Deblurring: process of removing (any kind of) blur from an image. A veces se incluye el deblurring como un ejemplo de **enhancing**.
+### Deconvolution
 
-Deconvolution: Process of applying the inverse operation of a convolution, often applied to restorarion and deblurring problems.
+Deconvolution can be one of the most effective methods for performing deblurring. There are other simple image restoration processes via the "Imaging Process", but they might not be very robust in real cases.
 
-Sharpening: process of improving the perceived acuity and visual sharpness of an image, especially for viewing it on a screen or print. Sharpening can be used to approximate deconvolution and often provides reasonable results
+Essentially, deconvolution restores high frequencies, but since the captured image contains noise that the "perfect" image does not, the direct deconvolution process can amplify the noise, which also contains high frequencies.
 
-Super-resolution: process of reconstructing missing detail in an image.
-
-Upsampling: process of increasing the image resolution, with no relation to blur, sharpness, or detail – but aiming to at least not reduce it. Sadly ML literature calls upsampling “single frame super-resolution”.
-
-## Deconvolution
-
-Deconvolution puede ser uno de los ḿetodos más efectivos para realizar el deblurring. Existen otros procesos simples de restauración de imágenes degradas medinte el "Imaging Process", pero pueden no ser muy robustos ante casos reales. 
-
-En esencia, deconvolution restores high frequencies, pero como la imagen capturada contiene ruido que la "perfecta" no, el proceso directo de deconvolución puede amplifica el ruido, el cual también contiene altas frecuencias.
-
-Debido a la ill-posedness del problema de la restauración (en general) de iḿagenes, suele ser frecuente concatenar etapas de deconvolucíon y denoising para aprovechar el desempeño y los beneficios de métodos eficientes de cada uno.
+Due to the ill-posedness of the image restoration problem (in general), it is common to concatenate deconvolution and denoising stages to leverage the performance and benefits of each efficient method.
 
 Some widely used approaches are:
-1. Solve in frequency domain (e.g. Inverse Filter [i.e. direct deconvolutoin])
-2. Solve in frequency domain and use regularization to minimize noise (e.g. Wiener Filter)
-3. Iterative approaches (e.g. Richardson Lucy)
-4. Iterative approaches with regularization (e.g. Richardson Lucy with Total Variation Regularization)
+1. Solve in the frequency domain (e.g., Inverse Filter [i.e., direct deconvolution])
+2. Solve in the frequency domain and use regularization to minimize noise (e.g., Wiener Filter)
+3. Iterative approaches (e.g., Richardson-Lucy)
+4. Iterative approaches with regularization (e.g., Richardson-Lucy with Total Variation Regularization)
 
-## Types of deconvolution
+### Types of Deconvolution
 
-Numerosos métodos se pueden llevar a cabo para mejorar la calidad de una imagen blurred, i.e. **deblurring**, andd objectivlyl and subjectivily assess the quality of the deblurring process. Este proceso puede conllevar varios enfoques:
-1) blind deconvolution: tratar de estimar la PSF "a ciegas" a partir (únicamente) de la imagen degradada
-2) non-blind deconvolution: asumir cierta PSF predefinida, basada en las suposiciones heurísticas o conocimiento formal que sea y "probar suerte" con los algoritmos de deblurring. 
-3) semi-blind deconvolution: BLABLABLA
+Numerous methods can be used to improve the quality of a blurred image, i.e., **deblurring**, and objectively and subjectively assess the quality of the deblurring process. This process can involve several approaches:
+1. **Blind deconvolution**: Trying to estimate the PSF "blindly" from (only) the degraded image.
+2. **Non-blind deconvolution**: Assuming a certain predefined PSF based on heuristic assumptions or formal knowledge, and "hoping for the best" with deblurring algorithms.
+3. **Semi-blind deconvolution**: BLABLABLA.
 
-Moreover, uno puede categorizar los tipos de deblurring según cómo se asume que es la PSF
-*Linear Model.
-**Time / Spatial Invariant Model.
-**Time / Spatial Variant Model.
-*Non Linear Model.
-**Time / Spatial Invariant Model.
-**Time / Spatial Variant Model.
+Moreover, one can categorize the types of deblurring based on how the PSF is assumed:
+- **Linear Model**.
+  - Time / Spatial Invariant Model.
+  - Time / Spatial Variant Model.
+- **Non-Linear Model**.
+  - Time / Spatial Invariant Model.
+  - Time / Spatial Variant Model.
 
-We can consider a lot of different kind of blurring models, and its complexity depends of wheter one assumes thee image have noise, the PDF is space-dependent, etc. E.g. characteristics like the kernel used to model the process (emulating the shake of a hand, the out-of-focus of a camera, etc.). For a complete discussion, see https://disp.ee.ntu.edu.tw/class/tutorial/Deblurring_tutorial.pdf.
+We can consider many different kinds of blurring models, and their complexity depends on whether one assumes the image has noise, the PDF is space-dependent, etc. For example, characteristics like the kernel used to model the process (emulating hand shake, out-of-focus camera, etc.). For a complete discussion, see https://disp.ee.ntu.edu.tw/class/tutorial/Deblurring_tutorial.pdf.
 
-Uno puede usar kernels muy sencillos (e.g. Gaussianos) en el desarrollo de procesos de deconvolutión eficiones para "salir del paso" en muchos casos prácticos.
+One can use very simple kernels (e.g., Gaussian) in developing efficient deconvolution processes to "get by" in many practical cases.
+
+
+## Testing
+
+Now that we have some background, we are prepared to implement some algorithm to try improving the quality of my mobile phone's camera.
+
+Here is my original image:
+
+FOTO IMAGEN AQUI
+
+We will test various methods to perform deblurring, mainly through deconvolution, and analyze the results.
+
+### 1) Non-blind deconvolution <a class="anchor" id="non-blind-deconvolution"></a>
+
+We assume that we (perfectly) know the (blur kernel of the) PSF.
+
+For instance, we assume the Imaging Process process is modeled by the following kernel, which is a Gaussian kernel with $size = 3$ and $\sigma = 3$:
+
+FOTO KERNEL
+
+#### 1.1) Wiener Filter <a class="anchor" id="wiener"></a>
+BREVE TEORÍA Y ECUACION WIENER
+
+FOTO RESULTADO
+
+Of course, the result is horrible. We do not know what PSF would have my camera. This is trial and error and the time complexity depends directly on the patience and expertise of the user.
+
+#### 1.2) Modified unsupervised Wiener <a class="anchor" id="uns-wiener"></a>
+This algorithm has a self-tuned regularization parameters based on data learning. Based on an iterative Gibbs sampler that draw alternatively samples of posterior conditional law of the image, the noise power and the image frequency power.
+
+See [scki-kit doc](https://scikit-image.org/docs/stable/auto_examples/filters/plot_restoration.html) and [paper](https://hal.archives-ouvertes.fr/hal-00674508).
+
+FOTO RESULTADO
+
+#### 1.3) Lucy-Richardson <a class="anchor" id="Lucy-Richardson"></a>
+Partimos de cierta conjetura de nuestra imagen ideal desconocida; aplicamos un esquema iterativo actualizando la estimación hasta su convergencia.
+
+FOTO RESULTADO
+
+#### 1.4) Lucy-Richardson with TV prior <a class="anchor" id="Lucy-Richardson-TV"></a>
+
+Añadiendo un regularizador anisotrópico como el operador TV se puede incorporar disparidad de los gradientes a la solución requerida, lo que, junto con la maximización del MAP que busca fidelidad, puede ser beneficioso para recuperar una imagen más natural y no tan rodeada de altas frecuencias artificiales.
+
+FOTO RESULTADO
+
+### 2) Blind deconvolution <a class="anchor" id="blind-deconvolution"></a>
+
+We intend to find the PSF directly from the degraded image.
+
+#### 2.1) ...
+
+### 3) emi-blind deconvolution <a class="anchor" id="semi-blind-deconvolution"></a>
+
+~~We use an initially aproximated PSF and then refine the result.~~
+
 
 ## References
 
 ### C++
 * https://github.com/y3nr1ng/DeconvLR
-- https://github.com/tianyishan/Blind_Deconvolution
-- https://github.com/chrrrisw/RL_deconv
-- https://github.com/DoubleBiao/fast_deblurring
+* https://github.com/tianyishan/Blind_Deconvolution
+* https://github.com/chrrrisw/RL_deconv
+* https://github.com/DoubleBiao/fast_deblurring
 
 ### Python
 * https://scikit-image.org/docs/0.24.x/auto_examples/filters/plot_deconvolution.html
@@ -79,7 +145,7 @@ Uno puede usar kernels muy sencillos (e.g. Gaussianos) en el desarrollo de proce
 * https://github.com/nkanven/gan-deblurring
 * https://github.com/dongjxjx/dwdn
 * https://github.com/axium/Blind-Image-Deconvolution-using-Deep-Generative-Priors
-- https://github.com/Tmodrzyk/richardson-lucy-python
+* https://github.com/Tmodrzyk/richardson-lucy-python
 
 ### MATLAB
 * https://es.mathworks.com/help/images/deblurring-images-using-a-wiener-filter.html
