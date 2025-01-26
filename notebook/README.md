@@ -2,7 +2,6 @@
 
 This document is a self-contained tutorial/introduction to the basics of image deblurring, through a _hands-on_ approach.   
 
-
 ## Index
 * [Introduction](#Introduction)
     * .
@@ -81,7 +80,9 @@ Now that we have some background, we are prepared to implement some algorithm to
 
 Here is my original image:
 
-FOTO IMAGEN AQUI
+<p align="center">
+  <img src="../assets/7.jpg" alt="Original image" title="Original image" style="display: inline-block; width: 300px" />,
+</p>
 
 We will test various methods to perform deblurring, mainly through deconvolution, and analyze the results.
 
@@ -89,9 +90,13 @@ We will test various methods to perform deblurring, mainly through deconvolution
 
 We assume that we (perfectly) know the (blur kernel of the) PSF.
 
-For instance, we assume the Imaging Process process is modeled by the following kernel, which is a Gaussian kernel with $size = 3$ and $\sigma = 3$:
+For instance, we assume the Imaging Process process is modeled by the following kernel, which is a Gaussian kernel with $size = 33$ and $\sigma = 3$:
 
-FOTO KERNEL
+<p align="center">
+  <img src="../assets/blur_kernel.png" alt="blur_kernel" title="blur_kernel" style="display: inline-block; width: 300px" />,
+</p>
+
+Assuming a known kernel we can test various non-blind deconvolution methods:
 
 #### 1.1) Wiener Filter <a class="anchor" id="wiener"></a>
 BREVE TEORÍA Y ECUACION WIENER
@@ -124,10 +129,17 @@ We intend to find the PSF directly from the degraded image.
 
 #### 2.1) ...
 
-### 3) emi-blind deconvolution <a class="anchor" id="semi-blind-deconvolution"></a>
+UN MÉTODO TRADICIONAL...
+
+#### 2.2) ...
+
+UN MODELO DL DE GITHUB...
+
+### 3) Semi-blind deconvolution <a class="anchor" id="semi-blind-deconvolution"></a>
 
 ~~We use an initially aproximated PSF and then refine the result.~~
 
+¿¿QUITAR?? <= igual solo mejor mencioanr que existe en la introducción, como caso especial, y no poner ejemplos o nombrar solo teóricos
 
 ## References
 
