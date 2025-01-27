@@ -1,5 +1,7 @@
 # notebook
 
+![deconv](./deconv.png)
+
 This document is a self-contained tutorial/introduction to the basics of image deblurring, through a _hands-on_ approach.   
 
 ## Index
@@ -20,12 +22,17 @@ This document is a self-contained tutorial/introduction to the basics of image d
     * [Links](#Links)
     * [Books](#Books)
 
+## Some preliminary remarks
+1. Las imágenes naturales tienen muchas más (dominan las) bajas frecuencias que las altas frecuencias, por ejemplo, salvo esquinas y si no hay ruido impulsional, en la naturaleza todo es más bien fradual y no suelen darse patrones piéls negro-blango-negro-blanco... alternantes.
+2. La convolución en el dominio espacial es equivalente a la multiplicación en el dominio frecuencial.
 
 ## Introduction <a class="anchor" id="Introduction"></a>
 
 Capturing an image using any type of analog or digital camera, and even through the human visual system, as it is represented in the real and physical world, is impossible due to processes like electronic noise, non-linear lens distortion caused by inherent imperfections, focusing issues, quantization, discretization, noise in the acquisition system, uncontrolled environmental factors, mechanical vibrations, acquisition time, movement of the captured objects, etc. Various degradation phenomena (Noise, scatter, glare, and blur) are discussed in https://temchromatinlab.wordpress.com/deconvolution/. All these sources of error have in common that they cause, in the output image, either the incident light on the sensor to scatter across neighboring pixels, or information from neighboring pixels to combine with each other, disturbing the actual information.
 
-All these factors make images a (pure) approximation of reality, since the problem is ill-posed and information is lost. However, the PSNR is usually so high that "we don't care". Still, there are occasions (see next image) where it is so low that one can call it "degraded." Imagine photographing an infinitely distant light point using an infinitely perfect camera; the resulting image will be a single bright pixel. However, if we photograph a star with our camera, the result is far from being a single bright pixel; instead, we will see a region scattered in a more or less circular shape that decreases in brightness with the radius. The effect that a real image acquisition system has on a "perfect" light source is called the **Point Spread Function** (PSF). If the convolution of a perfect image with this PSF produces the real image we would acquire, then by performing the deconvolution of our degraded image with the PSF, we obtain the restored, "ideal" image.
+All these factors make images a (pure) approximation of reality, since the problem is ill-posed and information is lost. However, the PSNR is usually so high that "we don't care". Still, there are occasions (see next image) where it is so low that one can call it "degraded." Imagine photographing an infinitely distant light point using an infinitely perfect camera; the resulting image will be a single bright pixel. However, if we photograph a star with our camera, the result is far from being a single bright pixel; instead, we will see a region scattered in a more or less circular shape that decreases in brightness with the radius. The effect that a real image acquisition system has on a "perfect" light source is called the **Point Spread Function** (PSF). 
+
+If the convolution of a perfect image with this PSF produces the real image we would acquire, then by performing the deconvolution of our degraded image with the PSF, we obtain the restored, "ideal" image. Sometimes, the **Optimal Transfer Function** (OTF) is mentioned, which is the counterpart of the PSF in the frequency domain.
 
 Furthermore, after this effect, noise is added to the image due to processes like those mentioned earlier. Sometimes (e.g., space telescopes), it is a poor assumption that the PSF is the same across all pixels in our real image. A degraded image like this is often denoted **blurred**. So, in a basic model, the ```Imaging Process = Convolve(ideal image, PSF) + Noise```. All these factors make PSF estimation theoretically possible, but practically impossible.
 
@@ -45,7 +52,9 @@ The deconvolution refers to the mathematical operations used in signal restorati
 
 Deconvolution can be one of the most effective methods for performing deblurring. There are other simple image restoration processes via the "Imaging Process", but they might not be very robust in real cases.
 
-Essentially, deconvolution restores high frequencies, but since the captured image contains noise that the "perfect" image does not, the direct deconvolution process can amplify the noise, which also contains high frequencies.
+![deconv2](./deconv2.png)
+
+Essentially, deconvolution restores high frequencies, but since the captured image contains noise that the "perfect" image does not, the direct deconvolution process can amplify the noise, which also contains high frequencies. One way to look at it is as follows: As is well known, convolution in the spatial domain is equivalent to multiplication in the frequency domain. However, the reverse operation (inverse) of division in the frequency domain is not equal to deconvolution in the spatial domain because there will typically be noise, which will be significantly amplified at high frequencies (even when anti-aliasing is applied). This leads to artifacts or replicas in the recovered image when using deconvolution.
 
 Due to the ill-posedness of the image restoration problem (in general), it is common to concatenate deconvolution and denoising stages to leverage the performance and benefits of each efficient method.
 
@@ -57,10 +66,12 @@ There are several techniques that use deconvolution to deblur signals. Some wide
 
 ### Types of Deconvolution
 
+_**How can we estimate the blur kernel $ H $ if, initially, we can only make assumptions?**_ For example, it could be Gaussian, a row/column vector, sparse, etc. Models such as neural networks, probabilistic approaches, or heuristic knowledge can be used to make a good estimation of $ H $. A very direct exploration method is provided by the PSF if we can identify a point (impulse) in the image, where its degraded version will certainly be the degradation function we're looking for. This way, we could estimate $ H $ approximately by simply observing part of our image, as mentioned in the introduction. Of course, this is easier when photographing a sky than a desk.
+
 Numerous methods can be employed to enhance the quality of a blurred image, commonly referred to as **deblurring**, and both objective and subjective measures can be used to assess the effectiveness of the deblurring process. This process can involve several approaches:
-1. **Blind deconvolution**: This method attempts to estimate the Point Spread Function (PSF) "blindly" from the degraded image alone, without any prior knowledge of the blur or the original image.
-2. **Non-blind deconvolution**: In this approach, a predefined PSF is assumed based on heuristic assumptions or prior formal knowledge, and deblurring algorithms attempt to recover the original image under these assumptions.
-3. **Semi-blind deconvolution**: This approach strikes a balance between the blind and non-blind methods. In semi-blind deconvolution, a partially known or estimated PSF is used, often derived from certain constraints or partial prior knowledge, allowing for more flexible recovery of the original image while still accounting for some level of uncertainty about the blur.
+1. **Blind deconvolution**: This method attempts to estimate the Point Spread Function (PSF) "blindly" from the degraded image alone, without any prior knowledge of the blur or the original image. We do not have any assumption about what the PSF might be.
+2. **Non-blind deconvolution**: In this approach, a predefined PSF is assumed based on heuristic assumptions or prior formal knowledge, and deblurring algorithms attempt to recover the original image under these assumptions. In the ideal case, we know the PSF or have a very good approximation, so we can restore the image with almost no error (since, in practice, some type of noise will have been added).
+3. **Semi-blind deconvolution**: This approach strikes a balance between the blind and non-blind methods. In semi-blind deconvolution, a partially known or estimated PSF is used, often derived from certain constraints or partial prior knowledge, allowing for more flexible recovery of the original image while still accounting for some level of uncertainty about the blur. We only have an assumption about what the PSF could be.
 
 Moreover, one can categorize the types of deblurring based on how the PSF is assumed:
 - **Linear Model**.
@@ -76,9 +87,9 @@ One can use very simple kernels (e.g., Gaussian) in developing efficient deconvo
 
 ### Variational formulation
 
-We start from the fact that, if the convolution filter involved in the imaging process is known, we can approximately recover the original image from the observed one through deconvolution.
+![deconv3](./deconv3.png)
 
-![deconv](./deconv.png)
+We start from the fact that, if the convolution filter involved in the imaging process is known, we can approximately recover the original image from the observed one through deconvolution.
 
 Now, when $ g(x, y) $ is the only thing that is "recognized as known" (i.e., in a realistic case), this becomes the problem of blind deconvolution. In this case, to estimate $ h(x, y) $ and try to recover $ f(x, y) $ as accurately as possible, we can "minimize a loss function" of the type:
 
@@ -124,7 +135,11 @@ For instance, we assume the Imaging Process process is modeled by the following 
 Assuming a known kernel we can test various non-blind deconvolution methods:
 
 #### 1.1) Wiener Filter <a class="anchor" id="wiener"></a>
-BREVE TEORÍA Y ECUACION WIENER
+A general formulation for the Wiener filter is:
+
+$$ W(r) = \left[ \frac{H^*(r)}{|H(r)|^2} \right]^a \cdot \left[ \frac{H^*(r)}{|H(r)|^2 + \frac{c}{\text{SNR}^2}} \right]^{1-a}, $$
+
+where \( a = 1 \) results in the total inverse filter (pure deconvolution), and \( c = 0 \) gives the corrected total inverse filter (with the regularization term, either constant or variable, that prevents division by zero and reduces high-frequency noise amplification).
 
 FOTO RESULTADO
 
@@ -195,3 +210,6 @@ UN MODELO DL DE GITHUB...
 ### Books
 * Algorithms for Image Processing and Computer Vision 2nd ed. J.R. Parker (p. 251)
 * Mathematical Problems in Image Processing (p. 128)
+
+### Courses
+* Mery, D. (2020, October 29). 22 Procesamiento de Imágenes: Deconvolución en restauración de imágenes y PSF. [Video](https://www.youtube.com/watch?v=Iw7I2Jnctq4&list=PLilWJnCHHGl2MECnUo0REYid7ZB7jNiHd&index=22&ab_channel=DomingoMery) 
