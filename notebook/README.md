@@ -29,7 +29,6 @@ All these factors make images a (pure) approximation of reality, since the probl
 
 Furthermore, after this effect, noise is added to the image due to processes like those mentioned earlier. Sometimes (e.g., space telescopes), it is a poor assumption that the PSF is the same across all pixels in our real image. A degraded image like this is often denoted **blurred**. So, in a basic model, the ```Imaging Process = Convolve(ideal image, PSF) + Noise```. All these factors make PSF estimation theoretically possible, but practically impossible.
 
-
 ### Disambiguation
 
 - **Smoothing**: We try to suppress superfluous features and false discontinuities.
@@ -42,13 +41,15 @@ Furthermore, after this effect, noise is added to the image due to processes lik
 
 ### Deconvolution
 
+The deconvolution refers to the mathematical operations used in signal restoration to recover data that has been degraded by a physical process that can be described by the (typically linear) inverse operation of a convolution.
+
 Deconvolution can be one of the most effective methods for performing deblurring. There are other simple image restoration processes via the "Imaging Process", but they might not be very robust in real cases.
 
 Essentially, deconvolution restores high frequencies, but since the captured image contains noise that the "perfect" image does not, the direct deconvolution process can amplify the noise, which also contains high frequencies.
 
 Due to the ill-posedness of the image restoration problem (in general), it is common to concatenate deconvolution and denoising stages to leverage the performance and benefits of each efficient method.
 
-Some widely used approaches are:
+There are several techniques that use deconvolution to deblur signals. Some widely used approaches are:
 1. Solve in the frequency domain (e.g., Inverse Filter [i.e., direct deconvolution])
 2. Solve in the frequency domain and use regularization to minimize noise (e.g., Wiener Filter)
 3. Iterative approaches (e.g., Richardson-Lucy)
@@ -56,10 +57,10 @@ Some widely used approaches are:
 
 ### Types of Deconvolution
 
-Numerous methods can be used to improve the quality of a blurred image, i.e., **deblurring**, and objectively and subjectively assess the quality of the deblurring process. This process can involve several approaches:
-1. **Blind deconvolution**: Trying to estimate the PSF "blindly" from (only) the degraded image.
-2. **Non-blind deconvolution**: Assuming a certain predefined PSF based on heuristic assumptions or formal knowledge, and "hoping for the best" with deblurring algorithms.
-3. **Semi-blind deconvolution**: BLABLABLA.
+Numerous methods can be employed to enhance the quality of a blurred image, commonly referred to as **deblurring**, and both objective and subjective measures can be used to assess the effectiveness of the deblurring process. This process can involve several approaches:
+1. **Blind deconvolution**: This method attempts to estimate the Point Spread Function (PSF) "blindly" from the degraded image alone, without any prior knowledge of the blur or the original image.
+2. **Non-blind deconvolution**: In this approach, a predefined PSF is assumed based on heuristic assumptions or prior formal knowledge, and deblurring algorithms attempt to recover the original image under these assumptions.
+3. **Semi-blind deconvolution**: This approach strikes a balance between the blind and non-blind methods. In semi-blind deconvolution, a partially known or estimated PSF is used, often derived from certain constraints or partial prior knowledge, allowing for more flexible recovery of the original image while still accounting for some level of uncertainty about the blur.
 
 Moreover, one can categorize the types of deblurring based on how the PSF is assumed:
 - **Linear Model**.
@@ -73,6 +74,30 @@ We can consider many different kinds of blurring models, and their complexity de
 
 One can use very simple kernels (e.g., Gaussian) in developing efficient deconvolution processes to "get by" in many practical cases.
 
+### Variational formulation
+
+We start from the fact that, if the convolution filter involved in the imaging process is known, we can approximately recover the original image from the observed one through deconvolution.
+
+![deconv](./deconv.png)
+
+Now, when $ g(x, y) $ is the only thing that is "recognized as known" (i.e., in a realistic case), this becomes the problem of blind deconvolution. In this case, to estimate $ h(x, y) $ and try to recover $ f(x, y) $ as accurately as possible, we can "minimize a loss function" of the type:
+
+$$ \min_{f,h} \left( (g - A(h) \cdot f)^2 + \lambda p_f(f) + \mu p_h(h) \right), $$
+
+Where, in addition to a data fidelity term (likelihood) between the observed (real) image and the generated (deblurred) image via the operator $ A $ dependent on $ h $, we introduce some prior $ p_f(f) $ on the restored image and some prior $ p_h(h) $ on the blur kernel.
+
+It is worth mentioning the fundamental formulation of the deblurring process under the variational framework. Let the inverse image formation process be denoted as $f$. 
+
+Assume that the functional of this problem has a data term chosen as:
+
+$$ D(f | u) = \frac{1}{2} \| A u - f \|_2^2, $$
+
+where $ A $ is the operator of the (assumed linear) direct process, and $ D $ is dictated by the application, in this case, deblurring:  
+$ A u = k * u $ (blur kernel).
+
+The question that usually generates the most interest is: **how to model the prior/regularization term in this formulation?** In deconvolution, $ E(u) = \| k * u - f \|_2^2 + \lambda \| Qu \|_2^2 $ (for example), the operator of the regularizer $ Q $ plays the role, on one hand, of moving the small eigenvalues of $ A $ away from zero and, at the same time, leaving the large eigenvalues unchanged. On the other hand, it incorporates the prior (knowledge of the smoothness of the solution) that we have about $ u $.
+
+This aspect is even more widely studied for denoising, although we will not discuss it here.
 
 ## Testing
 
@@ -113,13 +138,13 @@ See [scki-kit doc](https://scikit-image.org/docs/stable/auto_examples/filters/pl
 FOTO RESULTADO
 
 #### 1.3) Lucy-Richardson <a class="anchor" id="Lucy-Richardson"></a>
-Partimos de cierta conjetura de nuestra imagen ideal desconocida; aplicamos un esquema iterativo actualizando la estimación hasta su convergencia.
+We start with a certain conjecture of our unknown ideal image; we apply an iterative scheme, updating the estimation until convergence.
 
 FOTO RESULTADO
 
 #### 1.4) Lucy-Richardson with TV prior <a class="anchor" id="Lucy-Richardson-TV"></a>
 
-Añadiendo un regularizador anisotrópico como el operador TV se puede incorporar disparidad de los gradientes a la solución requerida, lo que, junto con la maximización del MAP que busca fidelidad, puede ser beneficioso para recuperar una imagen más natural y no tan rodeada de altas frecuencias artificiales.
+By adding an anisotropic regularizer such as the TV operator, the disparity of gradients can be incorporated into the required solution. This, along with the maximization of the MAP that seeks fidelity, can be beneficial for recovering a more natural image, less surrounded by artificial high frequencies.
 
 FOTO RESULTADO
 
@@ -134,12 +159,6 @@ UN MÉTODO TRADICIONAL...
 #### 2.2) ...
 
 UN MODELO DL DE GITHUB...
-
-### 3) Semi-blind deconvolution <a class="anchor" id="semi-blind-deconvolution"></a>
-
-~~We use an initially aproximated PSF and then refine the result.~~
-
-¿¿QUITAR?? <= igual solo mejor mencioanr que existe en la introducción, como caso especial, y no poner ejemplos o nombrar solo teóricos
 
 ## References
 
