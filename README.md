@@ -32,3 +32,9 @@ The goal is to automatically and effectively restore images through deconvolutio
 * The folder notebook contains the main investigation.
 * The folder code contain the code utilized.
 
+## Troubleshooting
+Installing heavy Python libraries like torch or torchvision, one can run out of space in /tmp. The workaround is to specify your own temporary directory:
+```bash
+pip._vendor.urllib3.exceptions.ProtocolError: ("Connection broken: OSError(28, 'No space left on device')", OSError(28, 'No space left on device'))
+(venv_datos) alejandro@pop-os:/media/alejandro/DATOS/venv_DATOS/src/dwdn$ TMPDIR=/media/alejandro/DATOS/pip_cache pip install torch torchvision
+```

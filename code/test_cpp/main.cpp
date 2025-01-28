@@ -18,12 +18,6 @@ void muestraImagenOpenCV(const cv::Mat img, std::string title, bool destroyAfter
         cv::destroyWindow(title);
 }
 
-void MyTimeOutput(const std::string& str, const std::chrono::high_resolution_clock::time_point& start_time, const std::chrono::high_resolution_clock::time_point& end_time)
-{
-    std::cout << str << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << " ms" << std::endl;
-    return;
-}
-
 cv::Mat deconvolutionByTV(const cv::Mat& inputImage, const cv::Mat& kernel, int iterations = 100, double lambda = 0.1, double epsilon = 0.004)
 {
     cv::Mat fTV;
@@ -41,56 +35,87 @@ cv::Mat deconvolutionByTV(const cv::Mat& inputImage, const cv::Mat& kernel, int 
 
     for (int niter = 0; niter < iterations; niter++)
     {
+        // Calcular gradientes X e Y
         for (int y = 0; y < height; y++)
         {
+            const double* fTVRow = fTV.ptr<double>(y);
+            double* gradXRow = gradientX.ptr<double>(y);
+            double* gradYRow = gradientY.ptr<double>(y);
+
             for (int x = 0; x < width; x++)
             {
-                double curValue = fTV.at<double>(y, x);
+                double curValue = fTVRow[x];
+
                 if (y < height - 1)
                 {
-                    gradientY.at<double>(y, x) = fTV.at<double>(y + 1, x) - curValue; // Gradiente en Y
+                    gradYRow[x] = fTV.ptr<double>(y + 1)[x] - curValue; // Gradiente en Y
                 }
                 if (x < width - 1)
                 {
-                    gradientX.at<double>(y, x) = fTV.at<double>(y, x + 1) - curValue; // Gradiente en X
+                    gradXRow[x] = fTVRow[x + 1] - curValue; // Gradiente en X
                 }
             }
         }
 
+        // Normalizar gradientes
         cv::Mat normGrad;
         cv::magnitude(gradientX, gradientY, normGrad);
         normGrad += epsilon;
 
-        gradientX = gradientX / normGrad;
-        gradientY = gradientY / normGrad;
+        for (int y = 0; y < height; y++)
+        {
+            double* gradXRow = gradientX.ptr<double>(y);
+            double* gradYRow = gradientY.ptr<double>(y);
+            const double* normGradRow = normGrad.ptr<double>(y);
 
+            for (int x = 0; x < width; x++)
+            {
+                gradXRow[x] /= normGradRow[x];
+                gradYRow[x] /= normGradRow[x];
+            }
+        }
+
+        // Calcular divergencia
         cv::Mat divergence = cv::Mat::zeros(height, width, CV_64F);
         for (int y = 1; y < height - 1; y++)
         {
+            const double* gradXRow = gradientX.ptr<double>(y);
+            const double* gradYRow = gradientY.ptr<double>(y);
+            const double* gradXPrevRow = gradientX.ptr<double>(y - 1);
+            const double* gradYPrevRow = gradientY.ptr<double>(y);
+            double* divRow = divergence.ptr<double>(y);
+
             for (int x = 1; x < width - 1; x++)
             {
-                divergence.at<double>(y, x) = gradientX.at<double>(y, x) - gradientX.at<double>(y - 1, x) +
-                                              gradientY.at<double>(y, x) - gradientY.at<double>(y, x - 1);
+                divRow[x] = gradXRow[x] - gradXPrevRow[x] + gradYRow[x] - gradYPrevRow[x - 1];
             }
         }
 
+        // Actualizar fTV
         cv::Mat previous_fTV = fTV.clone();
         for (int y = 0; y < height; y++)
         {
+            const double* inputRow = inputImage.ptr<double>(y);
+            const double* normGradRow = normGrad.ptr<double>(y);
+            const double* divRow = divergence.ptr<double>(y);
+            double* fTVRow = fTV.ptr<double>(y);
+
             for (int x = 0; x < width; x++)
             {
-                double kValue = (1.0 / (1.0 + lambda * normGrad.at<double>(y, x)));
+                double kValue = 1.0 / (1.0 + lambda * normGradRow[x]);
+                double fidelityTerm = fTVRow[x] - inputRow[x];
 
-                double fidelityTerm = fTV.at<double>(y, x) - inputImage.at<double>(y, x);
+                fTVRow[x] -= (0.05 * kValue * (divRow[x] + lambda * fidelityTerm));
 
-                fTV.at<double>(y, x) -= (0.05 * kValue * (divergence.at<double>(y, x) + lambda * fidelityTerm));
-
-                fTV.at<double>(y, x) = std::max(0.0, std::min(1.0, fTV.at<double>(y, x)));
+                fTVRow[x] = std::max(0.0, std::min(1.0, fTVRow[x]));
             }
         }
 
-        // cv::imshow("fTV", fTV);
-        // cv::waitKey(5);
+        std::cout << "iter: " << niter << std::endl;
+        cv::Mat fTV_vis;
+        cv::resize(fTV, fTV_vis, cv::Size(), 0.5, 0.5);
+        cv::imshow("fTV_vis", fTV_vis);
+        cv::waitKey(1);
     }
 
     return fTV;
@@ -460,7 +485,7 @@ void applyGeneralWienerDeconvolution(const cv::Mat& G, cv::Mat& F_restored, int 
 
 int main()
 {
-    std::string imagePath = "/opt/proyectos/image-deblurrer/assets/4.jpg";
+    std::string imagePath = "/opt/proyectos/image-deblurrer/assets/8.jpg";
     cv::Mat input = cv::imread(imagePath, cv::IMREAD_UNCHANGED);
 
     if (input.empty())
@@ -484,28 +509,28 @@ int main()
 
     /// Filtro de Wiener general
     {
-        cv::Mat G;
-        input.channels() == 3 ? cv::cvtColor(input, G, cv::COLOR_BGR2GRAY) : input.copyTo(G);
-        G.convertTo(G, CV_64F, 1.0 / 255.0);
-        // cv::resize(G, G, cv::Size(128, 128));
-        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/G.png", G * 255);
+        // cv::Mat G;
+        // input.channels() == 3 ? cv::cvtColor(input, G, cv::COLOR_BGR2GRAY) : input.copyTo(G);
+        // G.convertTo(G, CV_64F, 1.0 / 255.0);
+        // // cv::resize(G, G, cv::Size(128, 128));
+        // cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/G.png", G * 255);
 
-        /// Parámetros de la restauración:
-        int kSize = 25;
-        double sigma = 2.0;
-        double C = 0.251;
-        double rho = 20.0;
-        double a = 0.5;
-        bool constantK = false;
-        double kValue = 100;
+        // /// Parámetros de la restauración:
+        // int kSize = 25;
+        // double sigma = 2.0;
+        // double C = 0.251;
+        // double rho = 20.0;
+        // double a = 0.5;
+        // bool constantK = false;
+        // double kValue = 100;
 
-        cv::Mat F_restored;
-        applyGeneralWienerDeconvolution(G, F_restored, kSize, sigma, constantK, kValue, C, rho, a);
+        // cv::Mat F_restored;
+        // applyGeneralWienerDeconvolution(G, F_restored, kSize, sigma, constantK, kValue, C, rho, a);
 
-        F_restored.convertTo(F_restored, CV_8UC1, 255.0);
-        cv::normalize(F_restored, F_restored, 0, 255, cv::NORM_MINMAX, CV_8UC1, cv::noArray());
-        muestraImagenOpenCV(F_restored, "Imagen restaurada F^", false);
-        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/F_restored.png", F_restored);
+        // F_restored.convertTo(F_restored, CV_8UC1, 255.0);
+        // cv::normalize(F_restored, F_restored, 0, 255, cv::NORM_MINMAX, CV_8UC1, cv::noArray());
+        // muestraImagenOpenCV(F_restored, "Imagen restaurada F^", false);
+        // cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/F_restored.png", F_restored);
     }
 
     /// Deconvolution with TV prior
@@ -514,63 +539,61 @@ int main()
         //     cv::cvtColor(input, input, cv::COLOR_BGR2GRAY);
         // cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
         // input.convertTo(input, CV_64F, 1.0 / 255.0);
+        // cv::imwrite("/opt/proyectos/image-deblurrer/assets/tvprior/input.png", input * 255);
 
         // /// PSF usada (gaussiana, motion, leer de archivo según datasheet de cámara...)
-        // int kernel_size = 3;
+        // int kernel_size = 11;
         // // cv::Mat psf = cv::imread("psf.jpg", cv::IMREAD_GRAYSCALE);
-        // cv::Mat psf = cv::getGaussianKernel(kernel_size, 1.0, CV_64F) * cv::getGaussianKernel(kernel_size, 1.0, CV_64F).t();
+        // cv::Mat psf = cv::getGaussianKernel(kernel_size, 1, CV_64F) * cv::getGaussianKernel(kernel_size, 1, CV_64F).t();
+        // psf /= cv::sum(psf)[0];
+        // cv::imwrite("/opt/proyectos/image-deblurrer/assets/tvprior/psf.png", psf * 255);
 
         // cv::Mat result;
         // muestraImagenOpenCV(input, "input", false);
-        // start_time = std::chrono::high_resolution_clock::now();
-        // cv::Mat tiko_deconv = deconvolutionByTV(input, psf, 100, 20.0, 0.0004);
-        // end_time = std::chrono::high_resolution_clock::now();
-        // MyTimeOutput("deconvolutionWithTVPrior: ", start_time, end_time);
+        // cv::Mat tiko_deconv = deconvolutionByTV(input, psf, 10, 25, 0.0004);
         // muestraImagenOpenCV(tiko_deconv, "deconvolutionWithTVPrior", false);
+        // cv::normalize(tiko_deconv, tiko_deconv, 0.0, 1.0, cv::NORM_MINMAX, CV_64FC1);
+        // cv::imwrite("/opt/proyectos/image-deblurrer/assets/tvprior/tiko_deconv.png", tiko_deconv * 255);
     }
 
     /// Deconvolution with hyper-Laplacian prior
     {
-        // cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
-        // input.convertTo(input, CV_32F, 1.0 / 255.0);
+        cv::resize(input, input, cv::Size(512, 512), 0.0, 0.0, cv::INTER_NEAREST_EXACT);
+        input.convertTo(input, CV_32F, 1.0 / 255.0);
 
-        // cv::Mat out[3], src[3], imout;
+        cv::Mat out[3], src[3], imout;
 
-        // cv::Mat kernel = (cv::Mat_<float>(11, 11) <<
-        //                   2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
-        //                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        //                   5, 0, 2, 0, 1, 1, 4, 0, 3, 0, 3,
-        //                   1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-        //                   4, 1, 5, 0, 1, 3, 4, 0, 3, 0, 2,
-        //                   0, 0, 0, 0, 1, 6, 2, 0, 0, 0, 0,
-        //                   1, 0, 4, 5, 23, 37, 27, 2, 1, 0, 0,
-        //                   0, 0, 0, 0, 17, 35, 23, 0, 0, 0, 0,
-        //                   0, 0, 0, 0, 4, 9, 5, 0, 0, 0, 0,
-        //                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        //                   1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0);
-        // kernel /= 255.0;
+        cv::Mat kernel = (cv::Mat_<float>(11, 11) <<
+                          2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          5, 0, 2, 0, 1, 1, 4, 0, 3, 0, 3,
+                          1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                          4, 1, 5, 0, 1, 3, 4, 0, 3, 0, 2,
+                          0, 0, 0, 0, 1, 6, 2, 0, 0, 0, 0,
+                          1, 0, 4, 5, 23, 37, 27, 2, 1, 0, 0,
+                          0, 0, 0, 0, 17, 35, 23, 0, 0, 0, 0,
+                          0, 0, 0, 0, 4, 9, 5, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0);
+        kernel /= 255.0;
 
-        // start_time = std::chrono::high_resolution_clock::now();
+        cv::split(input, src);
+        for (int i = 0; i < input.channels(); i++)
+            fast_deblurring(src[i], kernel, out[i]);
 
-        // cv::split(input, src);
-        // std::cout << "Número de canales: " << input.channels() << std::endl;
+        cv::merge(out, input.channels(), imout);
 
-        // for (int i = 0; i < input.channels(); i++) {
-        //     fast_deblurring(src[i], kernel, out[i]);
-        // }
+        imout *= 255.0;
+        imout.convertTo(imout, CV_8U);
 
-        // cv::merge(out, input.channels(), imout);
+        muestraImagenOpenCV(kernel, "kernel", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/hyperlap/kernel.png", kernel * 255);
+        muestraImagenOpenCV(input, "Input", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/hyperlap/input.png", input * 255);
+        muestraImagenOpenCV(imout, "fast_deblurring", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/hyperlap/imout.png", imout);
 
-        // end_time = std::chrono::high_resolution_clock::now();
-        // MyTimeOutput("fast_deblurring: ", start_time, end_time);
-
-        // imout *= 255.0;
-        // imout.convertTo(imout, CV_8U);
-
-        // cv::imshow("Input", input);
-        // cv::imshow("Deblurred", imout);
-
-        // cv::waitKey(0);
+        cv::waitKey(0);
     }
     return 0;
 }

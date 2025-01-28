@@ -23,8 +23,8 @@ This document is a self-contained tutorial/introduction to the basics of image d
     * [Books](#Books)
 
 ## Some preliminary remarks
-1. Las imágenes naturales tienen muchas más (dominan las) bajas frecuencias que las altas frecuencias, por ejemplo, salvo esquinas y si no hay ruido impulsional, en la naturaleza todo es más bien fradual y no suelen darse patrones piéls negro-blango-negro-blanco... alternantes.
-2. La convolución en el dominio espacial es equivalente a la multiplicación en el dominio frecuencial.
+1. Natural images have many more (dominate) low frequencies than high frequencies. For example, except for corners and in the absence of impulsive noise, everything in nature tends to be more gradual, and alternating black-and-white patterns do not typically occur.
+2. Convolution in the spatial domain is equivalent to multiplication in the frequency domain.
 
 ## Introduction <a class="anchor" id="Introduction"></a>
 
@@ -228,6 +228,73 @@ FOTO RESULTADO
 By adding an anisotropic regularizer such as the TV operator, the disparity of gradients can be incorporated into the required solution. This, along with the maximization of the MAP that seeks fidelity, can be beneficial for recovering a more natural image, less surrounded by artificial high frequencies.
 
 FOTO RESULTADO
+
+#### 1.5) Deconvolution with TV prior <a class="anchor" id="tvprior"></a>
+
+... 
+
+#### 1.6) Deconvolution with hyperlaplacian prior <a class="anchor" id="hyperlap"></a>
+
+...
+
+The kernel utilized was specifically designed:
+
+```cpp
+cv::Mat kernel = (cv::Mat_<float>(11, 11) <<
+                  2, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                  5, 0, 2, 0, 1, 1, 4, 0, 3, 0, 3,
+                  1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                  4, 1, 5, 0, 1, 3, 4, 0, 3, 0, 2,
+                  0, 0, 0, 0, 1, 6, 2, 0, 0, 0, 0,
+                  1, 0, 4, 5, 23, 37, 27, 2, 1, 0, 0,
+                  0, 0, 0, 0, 17, 35, 23, 0, 0, 0, 0,
+                  0, 0, 0, 0, 4, 9, 5, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                  1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0);
+kernel /= 255.0;
+```
+
+<img src="../assets/hyperlap/pen/kernel.png" alt="Blur Kernel" title="Blur Kernel" />
+
+<style>
+  :root {
+    --image-width: 256px; 
+    --image-height: 256px; 
+  }
+  .image-cell img {
+    display: inline-block;
+    width: var(--image-width);
+    height: var(--image-height);
+    object-fit: contain; 
+  }
+</style>
+<p align="center">
+  <table>
+    <tr>
+      <th>Original Image</th>
+      <th>Magnitude of Original Spectrum</th>
+      <th>Blur Kernel</th>
+      <th>Magnitude of Wiener Filter</th>
+      <th>Magnitude of Restored Image</th>
+      <th>Restored Image</th>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/hyperlap/pen/input.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/hyperlap/pen/imout.png" alt="Result" title="Result" /></td>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/hyperlap/things/input.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/hyperlap/things/imout.png" alt="Result" title="Result" /></td>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/hyperlap/text/input.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/hyperlap/text/imout.png" alt="Result" title="Result" /></td>
+    </tr>
+  </table>
+</p>
+
+Subtle improvements can be noticed; nevertheless, the text and other visually perceptible elements are still far from being considered restored... At this point, what options do we have left to try? Perhaps **machine learning** tools?... Yes!
 
 ### 2) Blind deconvolution <a class="anchor" id="blind-deconvolution"></a>
 
