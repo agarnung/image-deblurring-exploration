@@ -320,12 +320,12 @@ void applyGeneralWienerDeconvolution(const cv::Mat& G, cv::Mat& F_restored, int 
     cv::Mat H = cv::getGaussianKernel(kSize, sigma, CV_64F);
     H /= cv::sum(H)[0]; // Asegurarse de que esté normalizado
     H = H * H.t();
-    std::cout << H << std::endl;
 
     muestraImagenOpenCV(G, "Imagen degradada G", false);
     cv::Mat H_vis;
     cv::normalize(H, H_vis, 0, 255, cv::NORM_MINMAX, CV_8UC1);
     muestraImagenOpenCV(H_vis, "Blur kernel", false);
+    cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/H_vis.png", H_vis);
 
     /// Definir SNR2inv(r) = C * r^rho
     int N = G.rows;
@@ -388,6 +388,7 @@ void applyGeneralWienerDeconvolution(const cv::Mat& G, cv::Mat& F_restored, int 
         cv::log(mag, mag);
         cv::phase(planes[0], planes[1], phase, false);
         muestraImagenOpenCV(fftshift2D(mag), "G_ mag", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/G_mag.png", fftshift2D(mag) * 255);
         // muestraImagenOpenCV(phase, "G_ phase", false);
     }
 
@@ -433,6 +434,7 @@ void applyGeneralWienerDeconvolution(const cv::Mat& G, cv::Mat& F_restored, int 
         cv::log(mag, mag);
         cv::phase(planes[0], planes[1], phase, false);
         muestraImagenOpenCV(fftshift2D(mag), "W mag", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/W_mag.png", fftshift2D(mag) * 255);
         // muestraImagenOpenCV(phase, "W phase", false);
     }
     {
@@ -443,20 +445,22 @@ void applyGeneralWienerDeconvolution(const cv::Mat& G, cv::Mat& F_restored, int 
         cv::log(mag, mag);
         cv::phase(planes[0], planes[1], phase, false);
         muestraImagenOpenCV(fftshift2D(mag), "F_restored_ mag", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/F_restored_mag.png", fftshift2D(mag) * 255);
         // muestraImagenOpenCV(phase, "F_restored_ phase", false);
     }
 
     cv::dft(F_restored_, F_restored, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT | cv::DFT_SCALE);
 
-    int Ns = N + n - 1;
-    int Ms = M + m - 1;
-    int k = 1;
-    F_restored = F_restored(cv::Rect(k, k, Ms, Ns));
+    int x0 = m;
+    int y0 = n;
+    int width = M;
+    int height = N;
+    F_restored = F_restored(cv::Rect(x0, y0, width, height));
 }
 
 int main()
 {
-    std::string imagePath = "/media/sf_shared_folder/blurred-vision-678x446_compressed.jpg";
+    std::string imagePath = "/opt/proyectos/image-deblurrer/assets/4.jpg";
     cv::Mat input = cv::imread(imagePath, cv::IMREAD_UNCHANGED);
 
     if (input.empty())
@@ -466,17 +470,17 @@ int main()
     }
 
     /// Wiener simple
-    // {
-    //     cv::Mat G;
-    //     input.channels() == 3 ? cv::cvtColor(input, G, cv::COLOR_BGR2GRAY) : input.copyTo(G);
-    //     G.convertTo(G, CV_64F, 1.0 / 255.0);
+    {
+        // cv::Mat G;
+        // input.channels() == 3 ? cv::cvtColor(input, G, cv::COLOR_BGR2GRAY) : input.copyTo(G);
+        // G.convertTo(G, CV_64F, 1.0 / 255.0);
 
-    //     cv::Mat F_restored;
-    //     cvWiener2(G, F_restored, 5, 5);
+        // cv::Mat F_restored;
+        // cvWiener2(G, F_restored, 11, 11);
 
-    //     muestraImagenOpenCV(G, "Before", false);
-    //     muestraImagenOpenCV(F_restored, "Imagen restaurada F^", false);
-    // }
+        // muestraImagenOpenCV(G, "Before", false);
+        // muestraImagenOpenCV(F_restored, "Imagen restaurada F^", false);
+    }
 
     /// Filtro de Wiener general
     {
@@ -484,12 +488,13 @@ int main()
         input.channels() == 3 ? cv::cvtColor(input, G, cv::COLOR_BGR2GRAY) : input.copyTo(G);
         G.convertTo(G, CV_64F, 1.0 / 255.0);
         // cv::resize(G, G, cv::Size(128, 128));
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/G.png", G * 255);
 
         /// Parámetros de la restauración:
-        int kSize = 11;
+        int kSize = 25;
         double sigma = 2.0;
         double C = 0.251;
-        double rho = 2.0;
+        double rho = 20.0;
         double a = 0.5;
         bool constantK = false;
         double kValue = 100;
@@ -500,6 +505,7 @@ int main()
         F_restored.convertTo(F_restored, CV_8UC1, 255.0);
         cv::normalize(F_restored, F_restored, 0, 255, cv::NORM_MINMAX, CV_8UC1, cv::noArray());
         muestraImagenOpenCV(F_restored, "Imagen restaurada F^", false);
+        cv::imwrite("/opt/proyectos/image-deblurrer/assets/wiener/F_restored.png", F_restored);
     }
 
     /// Deconvolution with TV prior

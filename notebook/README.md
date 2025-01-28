@@ -132,7 +132,7 @@ For instance, we assume the Imaging Process process is modeled by the following 
   <img src="../assets/blur_kernel.png" alt="blur_kernel" title="blur_kernel" style="display: inline-block; width: 300px" />,
 </p>
 
-Assuming a known kernel we can test various non-blind deconvolution methods:
+Assuming a known kernel, we can test various non-blind deconvolution methods:
 
 #### 1.1) Wiener Filter <a class="anchor" id="wiener"></a>
 
@@ -146,16 +146,77 @@ $$ W(r) = \left[ \frac{H^*(r)}{|H(r)|^2} \right]^a \cdot \left[ \frac{H^*(r)}{|H
 
 where \( a = 1 \) results in the total inverse filter (pure deconvolution), and \( c = 0 \) gives the corrected total inverse filter (with the regularization term, either constant or variable, that prevents division by zero and reduces high-frequency noise amplification).
 
-FOTO RESULTADO
+Here are some results for arbitrary parameters tuned to improve the performance on the particular images:
+<style>
+  :root {
+    --image-width: 256px; 
+    --image-height: 256px; 
+  }
+  .image-cell img {
+    display: inline-block;
+    width: var(--image-width);
+    height: var(--image-height);
+    object-fit: contain; 
+  }
+</style>
+<p align="center">
+  <table>
+    <tr>
+      <th>Original Image</th>
+      <th>Magnitude of Original Spectrum</th>
+      <th>Blur Kernel</th>
+      <th>Magnitude of Wiener Filter</th>
+      <th>Magnitude of Restored Image</th>
+      <th>Restored Image</th>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/wiener/pen/G.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/pen/G_mag.png" alt="Magnitude of Original Spectrum" title="Magnitude of Original Spectrum" /></td>
+      <td class="image-cell"><img src="../assets/wiener/pen/H_vis.png" alt="Blur Kernel" title="Blur Kernel" /></td>
+      <td class="image-cell"><img src="../assets/wiener/pen/W_mag.png" alt="Magnitude of Wiener Filter" title="Magnitude of Wiener Filter" /></td>
+      <td class="image-cell"><img src="../assets/wiener/pen/F_restored_mag.png" alt="Magnitude of Restored Image" title="Magnitude of Restored Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/pen/F_restored.png" alt="Restored Image" title="Restored Image" /></td>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/wiener/dog/G.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/dog/G_mag.png" alt="Magnitude of Original Spectrum" title="Magnitude of Original Spectrum" /></td>
+      <td class="image-cell"><img src="../assets/wiener/dog/H_vis.png" alt="Blur Kernel" title="Blur Kernel" /></td>
+      <td class="image-cell"><img src="../assets/wiener/dog/W_mag.png" alt="Magnitude of Wiener Filter" title="Magnitude of Wiener Filter" /></td>
+      <td class="image-cell"><img src="../assets/wiener/dog/F_restored_mag.png" alt="Magnitude of Restored Image" title="Magnitude of Restored Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/dog/F_restored.png" alt="Restored Image" title="Restored Image" /></td>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/wiener/desktop/G.png" alt="Original Image" title="Original Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/desktop/G_mag.png" alt="Magnitude of Original Spectrum" title="Magnitude of Original Spectrum" /></td>
+      <td class="image-cell"><img src="../assets/wiener/desktop/H_vis.png" alt="Blur Kernel" title="Blur Kernel" /></td>
+      <td class="image-cell"><img src="../assets/wiener/desktop/W_mag.png" alt="Magnitude of Wiener Filter" title="Magnitude of Wiener Filter" /></td>
+      <td class="image-cell"><img src="../assets/wiener/desktop/F_restored_mag.png" alt="Magnitude of Restored Image" title="Magnitude of Restored Image" /></td>
+      <td class="image-cell"><img src="../assets/wiener/desktop/F_restored.png" alt="Restored Image" title="Restored Image" /></td>
+    </tr>
+  </table>
+</p>
 
-Of course, the result is horrible. We do not know what PSF would have my camera. This is trial and error and the time complexity depends directly on the patience and expertise of the user.
+The result is not satisfactory. Our photos are something _bizarre_; the blurring effect is very intense, and the Wiener filter has limitations under this level of degradation. We do not know what PSF would have my camera. This is trial and error and the time complexity depends directly on the patience and expertise of the user.
 
 #### 1.2) Modified unsupervised Wiener <a class="anchor" id="uns-wiener"></a>
 This algorithm has a self-tuned regularization parameters based on data learning. Based on an iterative Gibbs sampler that draw alternatively samples of posterior conditional law of the image, the noise power and the image frequency power.
 
 See [scki-kit doc](https://scikit-image.org/docs/stable/auto_examples/filters/plot_restoration.html) and [paper](https://hal.archives-ouvertes.fr/hal-00674508).
 
-FOTO RESULTADO
+<p align="center">
+  <table>
+    <tr>
+      <td class="image-cell"><img src="../assets/uns_wie/pen/original.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+      <td class="image-cell"><img src="../assets/uns_wie/pen/kernel.png" alt="Kernel" style="width: 200px; height: 200px;" /></td>
+      <td class="image-cell"><img src="../assets/uns_wie/pen/result.png" alt="Result Image" style="width: 400px; height: 300px;" /></td>
+    </tr>
+    <tr>
+      <td class="image-cell"><img src="../assets/uns_wie/things/original.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+      <td class="image-cell"><img src="../assets/uns_wie/things/kernel.png" alt="Kernel" style="width: 200px; height: 200px;" /></td>
+      <td class="image-cell"><img src="../assets/uns_wie/things/result.png" alt="Result Image" style="width: 400px; height: 300px;" /></td>
+    </tr>
+  </table>
+</p>
 
 #### 1.3) Lucy-Richardson <a class="anchor" id="Lucy-Richardson"></a>
 We start with a certain conjecture of our unknown ideal image; we apply an iterative scheme, updating the estimation until convergence.
@@ -198,6 +259,7 @@ UN MODELO DL DE GITHUB...
 * https://github.com/dongjxjx/dwdn
 * https://github.com/axium/Blind-Image-Deconvolution-using-Deep-Generative-Priors
 * https://github.com/Tmodrzyk/richardson-lucy-python
+* https://github.com/scikit-image/scikit-image/blob/main/skimage/restoration/deconvolution.py#L142
 
 ### MATLAB
 * https://es.mathworks.com/help/images/deblurring-images-using-a-wiener-filter.html
