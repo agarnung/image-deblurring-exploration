@@ -135,6 +135,11 @@ For instance, we assume the Imaging Process process is modeled by the following 
 Assuming a known kernel we can test various non-blind deconvolution methods:
 
 #### 1.1) Wiener Filter <a class="anchor" id="wiener"></a>
+
+<p align="center">
+  <img src="../assets/wiener.png" alt="wiener" title="wiener" style="display: inline-block; width: 500px" />,
+</p>
+
 A general formulation for the Wiener filter is:
 
 $$ W(r) = \left[ \frac{H^*(r)}{|H(r)|^2} \right]^a \cdot \left[ \frac{H^*(r)}{|H(r)|^2 + \frac{c}{\text{SNR}^2}} \right]^{1-a}, $$
@@ -177,11 +182,12 @@ UN MODELO DL DE GITHUB...
 
 ## References
 
-### C++
+### C/C++
 * https://github.com/y3nr1ng/DeconvLR
 * https://github.com/tianyishan/Blind_Deconvolution
 * https://github.com/chrrrisw/RL_deconv
 * https://github.com/DoubleBiao/fast_deblurring
+* https://stackoverflow.com/questions/6558641/wiener-filtering
 
 ### Python
 * https://scikit-image.org/docs/0.24.x/auto_examples/filters/plot_deconvolution.html
