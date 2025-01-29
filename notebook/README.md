@@ -379,6 +379,10 @@ There is some change in the coloration of the images, but the deblurring results
 * https://en.wikipedia.org/wiki/Deconvolution
 * https://github.com/subeeshvasu/Awesome-Deblurring
 * https://networknomad.hashnode.dev/recovering-sharpness-a-comprehensive-exploration-of-image-deblurring-techniques-leveraging-deep-learning
+* https://debuggercafe.com/image-deblurring-using-convolutional-neural-networks-and-deep-learning/
+* https://towardsdatascience.com/how-to-de-blur-images-without-training-neural-networks-72f8597c0014
+* https://medium.com/@saiwadotai/what-is-the-image-deblurring-deep-learning-method-b40621406ae3
+* https://networknomad.hashnode.dev/recovering-sharpness-a-comprehensive-exploration-of-image-deblurring-techniques-leveraging-deep-learning
 
 ### Books
 * Algorithms for Image Processing and Computer Vision 2nd ed. J.R. Parker (p. 251)
