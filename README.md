@@ -1,4 +1,4 @@
-# image-deblurrer
+# image-deblurring-exploration
 An attempt to make my mobile phone's camera work. Inspired by practical uses of deblurring/deconvolution techniques.
 
 <p style="font-size: 44px;">The exploration is documented in the <a href="https://github.com/agarnung/image-deblurrer/blob/main/notebook/README.md" style="font-size: 44px; font-weight: bold;">notebook</a>.</p>
