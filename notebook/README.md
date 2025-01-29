@@ -5,16 +5,18 @@
 This document is a self-contained tutorial/introduction to the basics of image deblurring, through a _hands-on_ approach.   
 
 ## Index
+## Index
 * [Introduction](#Introduction)
-    * .
 * [Testing](#Testing)
     * [Non-blind deconvolution](#non-blind-deconvolution)
         * [Wiener Filter](#wiener)
-        * [Lucy-Richardson](#Lucy-Richardson)
         * [Modified unsupervised Wiener](#uns-wiener)
+        * [Lucy-Richardson](#Lucy-Richardson)
         * [Lucy-Richardson with TV prior](#Lucy-Richardson-TV)
-    * [Blind deconvolution](#bind-deconvolution)
-    * [Semi-blind deconvolution](#semi-bind-deconvolution)
+        * [Deconvolution with TV prior](#tvprior)
+        * [Deconvolution with hyperlaplacian prior](#hyperlap)
+    * [Blind deconvolution](#blind-deconvolution)
+    * [Deblurring with DL](#dl-deblurring)
 * [References](#References)
     * [C++](#C++)
     * [Python](#Python)
