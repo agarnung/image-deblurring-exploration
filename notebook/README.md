@@ -302,11 +302,50 @@ We intend to find the PSF directly from the degraded image.
 
 #### 2.1) ...
 
-UN MÉTODO TRADICIONAL...
+...
 
-#### 2.2) ...
+### Deblurring with DL <a class="anchor" id="dl-deblurring"></a>
 
-UN MODELO DL DE GITHUB...
+Training an ML/DL model for deblurring or deconvolution in a supervised manner could be considered a blind method because the network has no prior knowledge of the PSF and must infer and adjust it based on the training images. However, from another perspective, we are providing the ideal images in a supervised way, making it a much stronger prior than other blind methods. Likewise, due to the inherent ambiguity, it could also be categorized as a semi-blind deblurring/deconvolution method.
+
+Leaving aside the issue of taxonomy, in this section, we will experiment with using a (relatively simple) DL model trained to restore any image.
+
+Using just 5 epochs and a realitvely simple model from [here](https://github.com/aniru-dh21/Image-Deblurring-App), consisting of AE and CNN, trained on the RealBlur Dataset, we obtain the following results (upper row: original, bottom row: deblurred):
+
+<p align="center">
+  <table>
+      <tr>
+        <th>Book</th>
+        <th>Key</th>
+        <th>Mouse</th>
+        <th>Pen</th>
+        <th>Screen</th>
+        <th>Text</th>
+        <th>Things</th>
+      </tr>
+      <tr>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/book/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/key/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/mouse/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/pen/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/screen/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/text/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/things/o.png" alt="Original Image" style="width: 400px; height: 300px;" /></td>
+      </tr>
+      <tr>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/book/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/key/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/mouse/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/pen/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/screen/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/text/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+        <td class="image-cell"><img src="../assets/dl/image-deblurring-app/things/d.png" alt="Restored Image" style="width: 400px; height: 300px;" /></td>
+      </tr>
+  </table>
+</p>
+
+
+There is some change in the coloration of the images, but the deblurring results are not worse than in previous methods. Aside from the challenging task of designing a sufficiently good and effective training set for real-world applications, we see that it is definitely worth investigating the design of more complex models and training them more intensively and dedicatedly.
 
 ## References
 
@@ -326,7 +365,8 @@ UN MODELO DL DE GITHUB...
 * https://github.com/dongjxjx/dwdn
 * https://github.com/axium/Blind-Image-Deconvolution-using-Deep-Generative-Priors
 * https://github.com/Tmodrzyk/richardson-lucy-python
-* https://github.com/scikit-image/scikit-image/blob/main/skimage/restoration/deconvolution.py#L142
+* https://github.com/scikit-image/scikit-image/blob/main/skimage/restoration/deconvolution.py#L142ç
+* https://github.com/agarnung/Image-Deblurring-App
 
 ### MATLAB
 * https://es.mathworks.com/help/images/deblurring-images-using-a-wiener-filter.html
@@ -342,6 +382,7 @@ UN MODELO DL DE GITHUB...
 * https://temchromatinlab.wordpress.com/deconvolution/
 * https://en.wikipedia.org/wiki/Deconvolution
 * https://github.com/subeeshvasu/Awesome-Deblurring
+* https://networknomad.hashnode.dev/recovering-sharpness-a-comprehensive-exploration-of-image-deblurring-techniques-leveraging-deep-learning
 
 ### Books
 * Algorithms for Image Processing and Computer Vision 2nd ed. J.R. Parker (p. 251)
