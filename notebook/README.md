@@ -196,7 +196,7 @@ Here are some results for arbitrary parameters tuned to improve the performance 
   </table>
 </p>
 
-The result is not satisfactory. Our photos are something _bizarre_; the blurring effect is very intense, and the Wiener filter has limitations under this level of degradation. We do not know what PSF would have my camera. This is trial and error and the time complexity depends directly on the patience and expertise of the user.
+The result is not satisfactory. Our photos are something _bizarre_; the blurring effect is very intense, and the Wiener filter has limitations under this level of degradation. Additionally, the ringing artifacts caused by not applying adequate windowing to the blur kernel are visible. We do not know what PSF would have my camera. This is trial and error and the time complexity depends directly on the patience and expertise of the user.
 
 #### 1.2) Modified unsupervised Wiener <a class="anchor" id="uns-wiener"></a>
 This algorithm has a self-tuned regularization parameters based on data learning. Based on an iterative Gibbs sampler that draw alternatively samples of posterior conditional law of the image, the noise power and the image frequency power.
