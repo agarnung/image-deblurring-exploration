@@ -223,13 +223,13 @@ See [scki-kit doc](https://scikit-image.org/docs/stable/auto_examples/filters/pl
 #### 1.3) Lucy-Richardson <a class="anchor" id="Lucy-Richardson"></a>
 We start with a certain conjecture of our unknown ideal image; we apply an iterative scheme, updating the estimation until convergence.
 
-FOTO RESULTADO
+... 
 
 #### 1.4) Lucy-Richardson with TV prior <a class="anchor" id="Lucy-Richardson-TV"></a>
 
 By adding an anisotropic regularizer such as the TV operator, the disparity of gradients can be incorporated into the required solution. This, along with the maximization of the MAP that seeks fidelity, can be beneficial for recovering a more natural image, less surrounded by artificial high frequencies.
 
-FOTO RESULTADO
+... 
 
 #### 1.5) Deconvolution with TV prior <a class="anchor" id="tvprior"></a>
 
@@ -257,8 +257,6 @@ cv::Mat kernel = (cv::Mat_<float>(11, 11) <<
 kernel /= 255.0;
 ```
 
-<img src="../assets/hyperlap/pen/kernel.png" alt="Blur Kernel" title="Blur Kernel" />
-
 <style>
   :root {
     --image-width: 256px; 
@@ -275,10 +273,6 @@ kernel /= 255.0;
   <table>
     <tr>
       <th>Original Image</th>
-      <th>Magnitude of Original Spectrum</th>
-      <th>Blur Kernel</th>
-      <th>Magnitude of Wiener Filter</th>
-      <th>Magnitude of Restored Image</th>
       <th>Restored Image</th>
     </tr>
     <tr>
