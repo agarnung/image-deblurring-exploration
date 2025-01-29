@@ -342,6 +342,7 @@ UN MODELO DL DE GITHUB...
 * https://temchromatinlab.wordpress.com/deconvolution/
 * https://en.wikipedia.org/wiki/Deconvolution
 * https://github.com/subeeshvasu/Awesome-Deblurring
+* https://github.com/Jishnu8/DBlur-An-Image-Deblurring-Toolkit
 
 ### Books
 * Algorithms for Image Processing and Computer Vision 2nd ed. J.R. Parker (p. 251)
