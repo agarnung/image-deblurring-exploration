@@ -1,6 +1,8 @@
 # image-deblurrer
 An attempt to make my mobile phone's camera work. Inspired by practical uses of deblurring/deconvolution techniques.
 
+The exploration is documented in the <p style="font-size: 44px;">The exploration is documented in the <a href="https://github.com/agarnung/image-deblurrer/blob/main/notebook/README.md" style="font-size: 44px;">**[notebook]**</a>.</p>
+
 My mobile phone camera is broken (i.e.  ```📉 : (📷 ⊂ 📱) → ⛓️‍💥```); the lens is shattered (photo attached below). In this repository, I investigate how to work around this problem using variational techniques in image processing to restore photos taken with the damaged camera.
 
 <p align="center">
