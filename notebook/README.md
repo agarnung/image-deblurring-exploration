@@ -296,7 +296,9 @@ Subtle improvements can be noticed; nevertheless, the text and other visually pe
 
 We intend to find the PSF directly from the degraded image.
 
-#### 2.1) ...
+#### 2.1) TV blind deconvolution with Split Bregman
+
+https://www.sciencedirect.com/science/article/pii/S1047320311001659
 
 ...
 
