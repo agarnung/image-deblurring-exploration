@@ -298,9 +298,10 @@ We intend to find the PSF directly from the degraded image.
 
 #### 2.1) TV blind deconvolution with Split Bregman
 
-https://www.sciencedirect.com/science/article/pii/S1047320311001659
+Probar este en IPOL https://www.ipol.im/pub/art/2012/g-tvdc/article.pdf
 
-...
+https://www.sciencedirect.com/science/article/pii/S1047320311001659
+... 
 
 ### Deblurring with DL <a class="anchor" id="dl-deblurring"></a>
 
