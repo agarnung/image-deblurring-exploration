@@ -72,5 +72,5 @@ compile_commands.json
 
 *_qmlcache.qrc
 
-# Python
-*.pyc
+# Custom
+*.pth

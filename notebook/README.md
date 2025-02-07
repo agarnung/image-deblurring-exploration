@@ -343,9 +343,32 @@ Using just 5 epochs and a realitvely simple model from [here](https://github.com
   </table>
 </p>
 
-
 There is some change in the coloration of the images, but the deblurring results are not worse than in previous methods. Aside from the challenging task of designing a sufficiently good and effective training set for real-world applications, we see that it is definitely worth investigating the design of more complex models and training them more intensively and dedicatedly.
 
+#### Custom DL deblurring <a class="anchor" id="custom-dl-deblurring"></a>
+
+We go further and explore some DL architectures and datasets for image deblurring with DL techniques. We also develop an app to test it with any desired input image. The full sub-repository is available [here](../code/test_python/image-deblurrer-dl/). 
+
+##### Models
+
+You can train and test, or even modify the architectures investigated here and reuse any of these models from the mentioned sub-repository. We test various models:
+* CNN: ...
+* SimpleAE: ...
+* AutoCNN: ...
+* DeblurNet: ...
+
+Some useful DL blocks for deblurring are:
+* ResBlock: ...
+* SwinBlock: ...
+
+##### Datasets
+
+We create a mega-dataset composed of some of the most widely used datasets in this field: 
+* ...: ...
+* ...: ...
+* ...: ...
+* ...: ...
+	
 ## References
 
 ### C/C++

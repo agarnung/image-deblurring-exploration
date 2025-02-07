@@ -1,0 +1,7 @@
+epochs: 10 # Number of epochs to train the model for
+model: "AutoCNN" # SimpleAE, CNN, AutoCNN, DeblurNet
+path: "/opt/deblurring/image-deblurrer-dl/" # Full path of the root directory of the project
+dataset_path: "/home/alejandro/Descargas/deblurring_datasets/toy2-dataset/" # Full path to the dataset, uncompressed
+usual_images_folder: "/home/alejandro/Imágenes/blurry_images" # FUll path to which in test time you with begin looking for test images
+num_workers: "auto" # Number of processes to load data in parallel ("auto" for optimized selection)  
+pin_memory: True # Speeds up data transfer to the GPU  
