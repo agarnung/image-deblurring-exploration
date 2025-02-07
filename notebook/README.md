@@ -365,7 +365,7 @@ There is some change in the coloration of the images, but the deblurring results
 * https://github.com/axium/Blind-Image-Deconvolution-using-Deep-Generative-Priors
 * https://github.com/Tmodrzyk/richardson-lucy-python
 * https://github.com/scikit-image/scikit-image/blob/main/skimage/restoration/deconvolution.py#L142ç
-* https://github.com/agarnung/Image-Deblurring-App
+* https://github.com/aniru-dh21/Image-Deblurring-App
 
 ### MATLAB
 * https://es.mathworks.com/help/images/deblurring-images-using-a-wiener-filter.html
