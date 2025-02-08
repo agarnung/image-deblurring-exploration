@@ -1,0 +1,11 @@
+matplotlib==3.10.0
+PyQt6==6.8.1
+PyQt6_sip==13.10.0
+PyYAML==6.0.2
+PyYAML==5.4.1
+PyYAML==6.0.2
+scikit_learn==1.6.1
+swin_transformer_pytorch==0.4.1
+torch==2.6.0
+torchvision==0.21.0
+tqdm==4.67.1
