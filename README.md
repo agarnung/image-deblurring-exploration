@@ -43,3 +43,4 @@ pip._vendor.urllib3.exceptions.ProtocolError: ("Connection broken: OSError(28, '
 
 ## TODO
 * Proper use of the Markdown rendering on GitHub; e.g. why LaTeX. HTML tables... seem to fail.
+* Train model with data augmentation
