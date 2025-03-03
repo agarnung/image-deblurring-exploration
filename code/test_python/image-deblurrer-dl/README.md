@@ -3,13 +3,13 @@
 ## Getting Started
 1. Clone the repository into your local system
 ```bash
-git clone https://github.com/aniru-dh21/Image-Deblurring-App.git
+git clone https://github.com/agarnung/image-deblurring-exploration.git
 ```
 2. Install required dependencies (recommended in a venv):
 ```bash
 pip install pipreqs
 ```
-(generated with ```$ pipreqs```)
+(generated with `$ pipreqs`)
 3. Specify your custom configuration for training and testing the model:
 ```bash
 nano ./config.yaml 
