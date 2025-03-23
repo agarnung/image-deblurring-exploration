@@ -415,4 +415,7 @@ We create a mega-dataset composed of some of the most widely used datasets in th
 * Mathematical Problems in Image Processing (p. 128)
 
 ### Courses
-* Mery, D. (2020, October 29). 22 Procesamiento de Imágenes: Deconvolución en restauración de imágenes y PSF. [Video](https://www.youtube.com/watch?v=Iw7I2Jnctq4&list=PLilWJnCHHGl2MECnUo0REYid7ZB7jNiHd&index=22&ab_channel=DomingoMery) 
+* Mery, D. (2020, October 29). 22 Procesamiento de Imágenes: Deconvolución en restauración de imágenes y PSF. [Video](https://www.youtube.com/watch?v=Iw7I2Jnctq4&list=PLilWJnCHHGl2MECnUo0REYid7ZB7jNiHd&index=22&ab_channel=DomingoMery)
+
+# TODO
+- Probar en otro notebook deblurring DL con alǵun modelo de DeepInv https://deepinv.github.io/deepinv/auto_examples/optimization/demo_TV_minimisation.html#sphx-glr-auto-examples-optimization-demo-tv-minimisation-py
